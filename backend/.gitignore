@@ -1,0 +1,78 @@
+# ===================================
+# Python / Flask .gitignore
+# ===================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Flask instance folder (contains config, uploads, etc.)
+instance/
+*.db
+*.sqlite3
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+.coverage
+htmlcov/
+.tox/
+.nox/
+.cache/
+.pytest_cache/
+coverage.xml
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# pytype
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# VS Code / PyCharm
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# macOS / Linux / Windows junk
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# dotenv environment files
+.env.local
+.env.*.local
+.envrc
+.env.bak
+*.env
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
