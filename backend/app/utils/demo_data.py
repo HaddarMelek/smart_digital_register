@@ -69,8 +69,8 @@ def initialize_demo_data(db):
     demo_classes = [
         {
             '_id': class_1_id,
-            'name': 'Grade 10A Mathematics',
-            'subject': 'Mathematics',
+            'name': 'Grade 10A Science',
+            'subject': 'Science',
             'teacher_id': teacher_id,  # ObjectId reference
             'students': [student_1_id, student_2_id, student_3_id],  # ObjectId references
             'schedule': 'Monday, Wednesday, Friday - 9:00 AM',
@@ -193,7 +193,7 @@ def initialize_demo_data(db):
             'parent_id': parent_id,      # ObjectId reference
             'type': 'absence',
             'title': 'Multiple Absences Alert',
-            'message': 'Emma Wilson has been absent for 3 consecutive days in Mathematics class.',
+            'message': 'Emma Wilson has been absent for 3 consecutive days in Science class.',
             'severity': 'high',
             'status': 'unread',
             'class_id': class_1_id,      # ObjectId reference
@@ -333,7 +333,7 @@ def initialize_demo_data(db):
             'status': 'completed',
             'data': {
                 str(class_1_id): {  # Convert ObjectId to string for dictionary key
-                    'name': 'Grade 10A Mathematics',
+                    'name': 'Grade 10A Science',
                     'attendance_rate': 88.5,
                     'total_sessions': 20,
                     'student_count': 3,

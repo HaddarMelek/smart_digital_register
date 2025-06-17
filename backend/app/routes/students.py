@@ -3,7 +3,7 @@ Student Management Routes for Intelligent Attendance Register
 """
 
 from flask import Blueprint, request, jsonify, current_app
-from flask_jwt_extended import jwt_required, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from datetime import datetime
 
 from app.models import Student
@@ -358,3 +358,60 @@ def bulk_import_students():
         
     except Exception as e:
         return server_error_response("Bulk import failed")
+
+
+@students_bp.route('/parent/<parent_id>', methods=['GET'])
+@jwt_required()
+def get_students_by_parent(parent_id):
+    """Get all students for a specific parent"""
+    try:
+        # Get the current user to verify they can access this data
+        current_user_claims = get_jwt()
+        current_user_id = get_jwt_identity()  # This gets the user ID from the token identity
+        current_user_role = current_user_claims.get('role')
+        
+        print(f"🔍 Current user ID from token: {current_user_id}")
+        print(f"🔍 Current user role: {current_user_role}")
+        print(f"🔍 Requested parent ID: {parent_id}")
+        
+        # Security check: parents can only access their own children
+        # Admins and teachers can access any parent's children
+        if current_user_role == 'parent' and current_user_id != parent_id:
+            return forbidden_response("You can only access your own children")
+        
+        # Get parent information first
+        from app.models import User
+        user_model = User(current_app.db)
+        parent = user_model.find_by_id(parent_id)
+        
+        if not parent:
+            return not_found_response("Parent")
+        
+        if parent.get('role') != 'parent':
+            return validation_error_response(["User is not a parent"])
+        
+        # Method 1: Try to get children from parent's 'children' field
+        children_ids = parent.get('children', [])
+        
+        if children_ids:
+            # Get students by their IDs from the parent's children field
+            student_model = Student(current_app.db)
+            students = []
+            
+            for child_id in children_ids:
+                student = student_model.find_by_id(str(child_id))
+                if student:
+                    students.append(student)
+        else:
+            # Method 2: Fallback - find students by parent_id field
+            student_model = Student(current_app.db)
+            students = student_model.find_all({'parent_id': student_model.to_object_id(parent_id)})
+        
+        return success_response(
+            data=students,
+            message=f"Found {len(students)} children for parent"
+        )
+        
+    except Exception as e:
+        print(f"❌ Error getting students for parent {parent_id}: {str(e)}")
+        return server_error_response("Failed to get parent's children")

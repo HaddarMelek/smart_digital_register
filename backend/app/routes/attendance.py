@@ -153,6 +153,111 @@ def bulk_mark_attendance():
         return server_error_response("Bulk attendance marking failed")
 
 
+@attendance_bp.route('', methods=['POST'])
+@jwt_required()
+def mark_class_attendance():
+    """Mark attendance for a class (handles bulk attendance from frontend)"""
+    try:
+        # Check permissions
+        claims = get_jwt()
+        if claims.get('role') not in ['admin', 'teacher']:
+            return forbidden_response("Insufficient permissions to mark attendance")
+        
+        data = request.get_json()
+        if not data:
+            return error_response("No data provided")
+        
+        # Validate required fields
+        class_id = data.get('class_id')
+        date_str = data.get('date')
+        attendance_records = data.get('attendance', [])
+        
+        if not class_id:
+            return error_response("class_id is required")
+        
+        if not date_str:
+            return error_response("date is required")
+        
+        if not isinstance(attendance_records, list) or len(attendance_records) == 0:
+            return error_response("attendance records are required")
+        
+        current_user_id = get_jwt_identity()
+        attendance_model = Attendance(current_app.db)
+        
+        marked_records = []
+        errors = []
+        
+        for i, record_data in enumerate(attendance_records):
+            try:
+                student_id = record_data.get('student_id')
+                status = record_data.get('status')
+                notes = record_data.get('notes', '')
+                
+                if not student_id:
+                    errors.append({
+                        'index': i,
+                        'error': 'student_id is required'
+                    })
+                    continue
+                
+                if not status:
+                    errors.append({
+                        'index': i,
+                        'student_id': student_id,
+                        'error': 'status is required'
+                    })
+                    continue
+                
+                # Prepare attendance data
+                attendance_data = {
+                    'student_id': student_id,
+                    'class_id': class_id,
+                    'date': date_str,
+                    'status': status.lower(),
+                    'notes': notes,
+                    'marked_by': current_user_id,
+                    'marked_at': datetime.utcnow()
+                }
+                
+                # Mark attendance
+                attendance_record = attendance_model.mark_attendance(attendance_data)
+                marked_records.append(attendance_record)
+                
+            except Exception as e:
+                errors.append({
+                    'index': i,
+                    'student_id': record_data.get('student_id', ''),
+                    'error': str(e)
+                })
+        
+        response_data = {
+            'marked_records': marked_records,
+            'errors': errors,
+            'summary': {
+                'total_processed': len(attendance_records),
+                'successful': len(marked_records),
+                'failed': len(errors)
+            }
+        }
+        
+        if not errors:
+            return success_response(
+                data=response_data,
+                message=f'Class attendance marked successfully. {len(marked_records)} records processed.',
+                status_code=201
+            )
+        else:
+            return success_response(
+                data=response_data,
+                message=f'Class attendance marking completed with some errors. {len(marked_records)} successful, {len(errors)} failed.',
+                status_code=207
+            )
+        
+    except Exception as e:
+        print(f"❌ Error marking class attendance: {str(e)}")
+        return server_error_response("Failed to mark class attendance")
+
+
 @attendance_bp.route('', methods=['GET'])
 @jwt_required()
 def get_attendance_records():
@@ -279,7 +384,7 @@ def get_class_attendance_by_date(class_id, date_str):
             class_attendance.append({
                 'student': student,
                 'attendance': student_attendance,
-                'status': student_attendance['status'] if student_attendance else 'not_marked'
+                'status': student_attendance['status'] if student_attendance else 'absent'
             })
         
         # Sort by student name
@@ -307,44 +412,78 @@ def get_class_attendance_by_date(class_id, date_str):
 def get_student_attendance_history(student_id):
     """Get attendance history for a specific student"""
     try:
+        print(f"🔍 Getting attendance history for student: {student_id}")
         # Get query parameters
         limit = int(request.args.get('limit', 30))
         class_id = request.args.get('class_id')
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        
+        print(f"🔍 Query params: limit={limit}, class_id={class_id}, start_date={start_date}, end_date={end_date}")
         
         attendance_model = Attendance(current_app.db)
         
-        # Build filters
-        filters = {'student_id': student_id}
+        # Build filters (convert student_id to ObjectId)
+        try:
+            student_object_id = attendance_model.to_object_id(student_id)
+            print(f"🔍 Student ObjectId: {student_object_id}")
+        except Exception as e:
+            print(f"❌ Error converting student_id to ObjectId: {e}")
+            return error_response(f"Invalid student_id format: {student_id}")
+            
+        filters = {'student_id': student_object_id}
+        
         if class_id:
-            filters['class_id'] = class_id
+            try:
+                class_object_id = attendance_model.to_object_id(class_id)
+                filters['class_id'] = class_object_id
+                print(f"🔍 Class ObjectId: {class_object_id}")
+            except Exception as e:
+                print(f"❌ Error converting class_id to ObjectId: {e}")
+                return error_response(f"Invalid class_id format: {class_id}")
         
-        # Get attendance history
-        pipeline = [
-            {'$match': filters},
-            {
-                '$lookup': {
-                    'from': 'classes',
-                    'localField': 'class_id',
-                    'foreignField': '_id',
-                    'as': 'class'
-                }
-            },
-            {'$unwind': '$class'},
-            {'$sort': {'date': -1}},
-            {'$limit': limit}
-        ]
+        # Add date range filter
+        if start_date or end_date:
+            date_filter = {}
+            if start_date:
+                date_filter['$gte'] = start_date
+            if end_date:
+                date_filter['$lte'] = end_date
+            filters['date'] = date_filter
+            
+        print(f"🔍 Final filters: {filters}")
         
-        records = list(attendance_model.collection.aggregate(pipeline))
+        # Get attendance history (simplified approach)
+        try:
+            # First, try to find any records for this student
+            all_records = list(attendance_model.collection.find(filters).sort('date', -1).limit(limit))
+            print(f"🔍 Found {len(all_records)} raw records")
+            
+            # Format records without lookup for now (simpler)
+            formatted_records = []
+            for record in all_records:
+                formatted_record = attendance_model.to_dict(record)
+                # Add a placeholder class name
+                formatted_record['class_name'] = 'Class'
+                formatted_records.append(formatted_record)
+                
+            print(f"🔍 Formatted {len(formatted_records)} records")
+            
+            # Simple statistics
+            stats = {
+                'total': len(formatted_records),
+                'present': len([r for r in formatted_records if r.get('status') == 'present']),
+                'absent': len([r for r in formatted_records if r.get('status') == 'absent']),
+                'late': len([r for r in formatted_records if r.get('status') == 'late'])
+            }
+            
+        except Exception as e:
+            print(f"❌ Error in attendance query: {e}")
+            formatted_records = []
+            stats = {'total': 0, 'present': 0, 'absent': 0, 'late': 0}
         
-        # Format records
-        formatted_records = []
-        for record in records:
-            formatted_record = attendance_model.to_dict(record)
-            formatted_record['class'] = attendance_model.to_dict(record['class'])
-            formatted_records.append(formatted_record)
-        
-        # Calculate statistics
-        stats = attendance_model.get_statistics({'student_id': student_id})
+        print(f"🔍 Found {len(formatted_records)} attendance records")
+        print(f"🔍 Statistics: {stats}")
         
         return success_response(
             data={
@@ -355,6 +494,9 @@ def get_student_attendance_history(student_id):
         )
         
     except Exception as e:
+        print(f"❌ Error in get_student_attendance_history: {e}")
+        import traceback
+        traceback.print_exc()
         return server_error_response("Failed to get student attendance history")
 
 

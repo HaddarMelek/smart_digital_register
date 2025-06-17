@@ -46,13 +46,41 @@ class MongoDB:
             self.students.create_index("student_id", unique=True)
             self.students.create_index("email", unique=True)
             
-            # Attendance collection indexes
-            self.attendance.create_index([("student_id", 1), ("date", 1)], unique=True)
+            # Attendance collection indexes migration
+            self._migrate_attendance_indexes()
             
             print("✅ Database indexes created")
             
         except Exception as e:
             print(f"⚠️ Warning: Could not create indexes: {e}")
+
+    def _migrate_attendance_indexes(self):
+        """Migrate attendance collection indexes to support multiple classes per student per day"""
+        try:
+            # List current indexes
+            current_indexes = list(self.attendance.list_indexes())
+            
+            # Check if old index exists and drop it
+            for index in current_indexes:
+                if index['name'] == 'student_id_1_date_1':
+                    print("🔄 Dropping old attendance index: student_id_1_date_1")
+                    self.attendance.drop_index('student_id_1_date_1')
+                    break
+            
+            # Create new compound index: student_id + class_id + date
+            try:
+                self.attendance.create_index(
+                    [("student_id", 1), ("class_id", 1), ("date", 1)], 
+                    unique=True,
+                    name="student_class_date_unique"
+                )
+                print("✅ Created new attendance index: student_class_date_unique")
+            except Exception as e:
+                if "already exists" not in str(e):
+                    print(f"⚠️ Could not create attendance index: {e}")
+            
+        except Exception as e:
+            print(f"⚠️ Warning during attendance index migration: {e}")
 
     def check_and_seed_data(self):
         """Check if data exists in database, if not seed it with demo data"""

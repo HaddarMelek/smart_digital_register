@@ -189,6 +189,25 @@ class Student(BaseModel):
             print(f"❌ Error in find_by_class: {e}")
             return []
     
+    def find_by_parent(self, parent_id: str) -> List[Dict[str, Any]]:
+        """Find students by parent ID"""
+        try:
+            print(f"🔍 Finding students for parent: {parent_id}")
+            
+            parent_object_id = self.to_object_id(parent_id)
+            
+            # Find students where parent_id matches
+            students = list(self.collection.find({
+                'parent_id': parent_object_id
+            }).sort('last_name', 1))
+            
+            print(f"   - Found {len(students)} students for parent")
+            result = [self.to_dict(student) for student in students]
+            return result
+        except Exception as e:
+            print(f"❌ Error in find_by_parent: {e}")
+            return []
+    
     def update(self, student_id: str, update_data: Dict[str, Any]) -> bool:
         """Update student"""
         update_data['updated_at'] = datetime.utcnow()
@@ -304,6 +323,13 @@ class Attendance(BaseModel):
         }).sort('date', -1).limit(limit))
         return [self.to_dict(record) for record in records]
     
+    def find(self, filters: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+        """Find attendance records with custom filters"""
+        if filters is None:
+            filters = {}
+        records = list(self.collection.find(filters))
+        return [self.to_dict(record) for record in records]
+
     def get_statistics(self, filters: Dict[str, Any] = None) -> Dict[str, Any]:
         """Get attendance statistics"""
         pipeline = []
