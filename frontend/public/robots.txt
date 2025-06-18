@@ -1,0 +1,31 @@
+# Alexander Academy Attendance Register
+
+This is the web application for managing student attendance at Alexander Academy.
+
+## Features
+
+- Intelligent attendance tracking
+- AI-powered absence predictions  
+- Real-time reporting and analytics
+- Parent notification system
+- Teacher dashboard with class management
+- Administrative oversight and controls
+
+## Access
+
+Please contact your system administrator for login credentials.
+
+## Technical Support
+
+For technical issues or support requests, please contact:
+- IT Support: it-support@alexanderacademy.ca
+- Phone: (604) 555-0123
+
+## Privacy & Security
+
+This application handles sensitive student data in compliance with:
+- Privacy Act of British Columbia
+- Personal Information Protection Act (PIPA)
+- Family Educational Rights and Privacy Act (FERPA)
+
+All data is encrypted and securely stored. Access is restricted to authorized personnel only.

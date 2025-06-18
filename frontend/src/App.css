@@ -1,0 +1,338 @@
+/* Custom styles for the Intelligent Attendance Register */
+
+/* Global Styles */
+.ant-layout {
+  background: #f0f2f5;
+}
+
+.ant-layout-header {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Loading Spinner */
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #1890ff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Card Hover Effects */
+.ant-card {
+  transition: all 0.3s;
+  border-radius: 8px;
+}
+
+.ant-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Statistics Card Styling */
+.ant-statistic-title {
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.ant-statistic-content {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* Button Styling */
+.ant-btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.ant-btn-primary:hover,
+.ant-btn-primary:focus {
+  background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Login Page Specific Styles */
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.login-card {
+  max-width: 400px;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+}
+
+.login-welcome {
+  color: white;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .login-welcome {
+    text-align: center;
+  }
+}
+
+/* Table Styling */
+.ant-table-thead > tr > th {
+  background-color: #fafafa;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.ant-table-tbody > tr:hover > td {
+  background-color: rgba(24, 144, 255, 0.04);
+}
+
+/* Tag Styling */
+.ant-tag {
+  border-radius: 16px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+}
+
+/* Progress Bar Styling */
+.ant-progress-text {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Calendar Styling */
+.ant-picker-calendar-date-content {
+  height: auto;
+  min-height: 40px;
+}
+
+/* Alert Styling */
+.ant-alert {
+  border-radius: 8px;
+}
+
+.ant-alert-info {
+  border: 1px solid #91d5ff;
+  background-color: #f6ffed;
+}
+
+/* Modal Styling */
+.ant-modal-header {
+  border-radius: 8px 8px 0 0;
+}
+
+.ant-modal-content {
+  border-radius: 8px;
+}
+
+/* Timeline Styling */
+.ant-timeline-item-content {
+  margin-left: 20px;
+}
+
+/* Badge Styling */
+.ant-badge-status-dot {
+  width: 8px;
+  height: 8px;
+}
+
+/* Responsive Utilities */
+@media (max-width: 576px) {
+  .ant-statistic-content {
+    font-size: 20px;
+  }
+  
+  .ant-card {
+    margin-bottom: 16px;
+  }
+  
+  .ant-table-wrapper {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .ant-layout-header {
+    padding: 0 16px;
+  }
+  
+  .ant-layout-content {
+    padding: 16px;
+  }
+}
+
+/* Dashboard Header Styling */
+.dashboard-header {
+  background: #fff;
+  padding: 0 24px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboard-title .anticon {
+  font-size: 24px;
+  color: #1890ff;
+}
+
+/* Card Grid Styling */
+.stats-grid {
+  margin-bottom: 24px;
+}
+
+.stats-grid .ant-col {
+  margin-bottom: 16px;
+}
+
+/* Form Styling */
+.ant-form-item-label > label {
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+/* Select Styling */
+.ant-select-selector {
+  border-radius: 6px;
+}
+
+/* Input Styling */
+.ant-input,
+.ant-input-password input {
+  border-radius: 6px;
+}
+
+/* Date Picker Styling */
+.ant-picker {
+  border-radius: 6px;
+  width: 100%;
+}
+
+/* Custom Colors */
+.text-success {
+  color: #52c41a;
+}
+
+.text-warning {
+  color: #faad14;
+}
+
+.text-danger {
+  color: #ff4d4f;
+}
+
+.text-info {
+  color: #1890ff;
+}
+
+.bg-success {
+  background-color: #f6ffed;
+}
+
+.bg-warning {
+  background-color: #fffbe6;
+}
+
+.bg-danger {
+  background-color: #fff2f0;
+}
+
+.bg-info {
+  background-color: #f0f5ff;
+}
+
+/* Utility Classes */
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+.mb-24 {
+  margin-bottom: 24px;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.mt-24 {
+  margin-top: 24px;
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .ant-layout-header,
+  .ant-btn,
+  .ant-pagination {
+    display: none !important;
+  }
+  
+  .ant-layout-content {
+    padding: 0 !important;
+  }
+  
+  .ant-card {
+    box-shadow: none !important;
+    border: 1px solid #d9d9d9 !important;
+  }
+}
