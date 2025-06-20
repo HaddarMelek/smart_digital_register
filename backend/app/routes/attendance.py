@@ -384,7 +384,7 @@ def get_class_attendance_by_date(class_id, date_str):
             class_attendance.append({
                 'student': student,
                 'attendance': student_attendance,
-                'status': student_attendance['status'] if student_attendance else 'absent'
+                'status': student_attendance['status'] if student_attendance else 'present'
             })
         
         # Sort by student name
