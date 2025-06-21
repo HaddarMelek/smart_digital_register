@@ -5,16 +5,12 @@ Flask-JWT-Extended==4.5.3
 
 # Database
 pymongo==4.5.0
-mongoengine==0.27.0
 
 # Security
 bcrypt==4.0.1
 Werkzeug==2.3.7
 
-# Validation and serialization
-marshmallow==3.20.1
-email-validator==2.0.0
-
+# Data processing (for ML features)
 numpy==1.24.3
 
 # Environment and configuration
@@ -23,17 +19,14 @@ python-dotenv==1.0.0
 # Date and time handling
 python-dateutil==2.8.2
 
-# Testing
+# Testing (development only)
 pytest==7.4.2
 pytest-flask==1.2.0
 pytest-mock==3.11.1
 
-# Development
+# Development tools
 autopep8==2.0.4
 flake8==6.1.0
 
 # Production server
 gunicorn==21.2.0
-
-# Logging and monitoring
-structlog==23.1.0

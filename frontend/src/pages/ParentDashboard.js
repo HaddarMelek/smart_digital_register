@@ -87,8 +87,6 @@ const ParentDashboard = () => {
           // Use 'id' field, not '_id'
           setSelectedChild(children[0].id);
 
-          console.log("🔍 DEBUG - Children loaded:", children);
-
           // Fetch alerts after children are loaded
           fetchAlerts(children);
         } else {
@@ -171,7 +169,6 @@ const ParentDashboard = () => {
       ).length;
       const lateDays = attendance.filter((a) => getStatus(a) === "late").length;
 
-      // Debug: log all unique status values
       const allStatuses = attendance.map((a) => getStatus(a));
       const uniqueStatuses = [...new Set(allStatuses)];
 
@@ -222,35 +219,21 @@ const ParentDashboard = () => {
         alertsData = response.data.data;
       }
 
-      console.log("🔍 DEBUG - Raw alerts data:", alertsData);
-
       // Get current parent's children info for filtering
       const childrenIds = childrenList.map((child) => child.id);
       const childrenNames = childrenList.map(
         (child) => `${child.first_name} ${child.last_name}`,
       );
 
-      console.log("🔍 DEBUG - Children IDs:", childrenIds);
-      console.log("🔍 DEBUG - Children Names:", childrenNames);
-
       // Filter alerts for current parent's children
       const parentAlerts = alertsData
         .filter((alert) => {
-          console.log("🔍 DEBUG - Processing alert:", alert);
-
           // Check if alert is relevant to parent (absence, late, or parent notification)
           const isRelevantType =
             alert.type === "absence" ||
             alert.type === "late" ||
             alert.type === "parent_notification" ||
             alert.type === "pattern"; // Include pattern alerts as they can be relevant for parents
-
-          console.log(
-            "🔍 DEBUG - Is relevant type:",
-            isRelevantType,
-            "for type:",
-            alert.type,
-          );
 
           // Check if alert is for one of parent's children
           // Try both student_id and student_name matching (case insensitive)

@@ -1,10 +1,18 @@
 """
-Simple ML stub for local development when scikit-learn is not available
+Simple ML fallback for when scikit-learn is not available
+Provides rule-based predictions for attendance system
 """
 
-import numpy as np
 from datetime import datetime, timedelta
 import random
+
+# Try to import numpy, fallback to basic calculations if not available
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    NUMPY_AVAILABLE = False
+    np = None
 
 
 class SimplePredictor:

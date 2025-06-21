@@ -101,84 +101,27 @@ def create_app():
             message='Attendance API is running'
         )
     
-    # Root endpoint
+    # API information endpoint
     @app.route('/api')
     def api_info():
-        """API information endpoint"""
+        """API information and documentation"""
         return success_response(
             data={
-                'name': 'Intelligent Attendance Register API',
+                'name': 'Alexander Academy Attendance API',
                 'version': '1.0.0',
-                'school': 'Alexander Academy',
-                'location': 'Vancouver, BC',
-                'endpoints': {
-                    'auth': '/api/auth/*',
-                    'students': '/api/students/*',
-                    'attendance': '/api/attendance/*',
-                    'predictions': '/api/predictions/*',
-                    'reports': '/api/reports/*',
-                    'alerts': '/api/alerts/*',
-                    'classes': '/api/classes/*'
-                },
-                'documentation': '/api/docs'
+                'status': 'running',
+                'endpoints': [
+                    'POST /api/auth/login',
+                    'GET /api/students',
+                    'POST /api/attendance/mark',
+                    'GET /api/reports/daily',
+                    'POST /api/predictions/absence',
+                    'GET /api/alerts/history'
+                ],
+                'health': '/api/health',
+                'seed_data': 'POST /api/seed'
             },
-            message='API information'
-        )
-    
-    # API documentation endpoint
-    @app.route('/api/docs')
-    def api_docs():
-        """API documentation"""
-        return success_response(
-            data={
-                'title': 'Intelligent Attendance Register API Documentation',
-                'version': '1.0.0',
-                'description': 'RESTful API for managing attendance at Alexander Academy',
-                'endpoints': {
-                    'Authentication': {
-                        'POST /api/auth/login': 'User login',
-                        'POST /api/auth/register': 'User registration',
-                        'POST /api/auth/refresh': 'Refresh JWT token',
-                        'POST /api/auth/logout': 'User logout'
-                    },
-                    'Database': {
-                        'POST /api/seed': 'Seed database with demo data'
-                    },
-                    'Students': {
-                        'GET /api/students': 'List all students',
-                        'POST /api/students': 'Create new student',
-                        'GET /api/students/{id}': 'Get student by ID',
-                        'PUT /api/students/{id}': 'Update student',
-                        'DELETE /api/students/{id}': 'Delete student'
-                    },
-                    'Attendance': {
-                        'GET /api/attendance': 'Get attendance records',
-                        'POST /api/attendance/mark': 'Mark attendance',
-                        'PUT /api/attendance/{id}': 'Update attendance',
-                        'GET /api/attendance/student/{student_id}': 'Get student attendance history'
-                    },
-                    'Predictions': {
-                        'POST /api/predictions/absence': 'Predict absence probability',
-                        'GET /api/predictions/patterns/unusual': 'Detect unusual patterns'
-                    },
-                    'Reports': {
-                        'GET /api/reports/daily': 'Daily attendance report',
-                        'GET /api/reports/weekly': 'Weekly attendance report',
-                        'GET /api/reports/monthly': 'Monthly attendance report'
-                    },
-                    'Alerts': {
-                        'POST /api/alerts/send': 'Send parent notification',
-                        'GET /api/alerts/history': 'Get alert history'
-                    },
-                    'Classes': {
-                        'GET /api/classes': 'List all classes',
-                        'POST /api/classes': 'Create new class',
-                        'GET /api/classes/{id}': 'Get class details',
-                        'PUT /api/classes/{id}': 'Update class'
-                    }
-                }
-            },
-            message='API Documentation'
+            message='Alexander Academy Attendance System API'
         )
     
     return app

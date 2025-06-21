@@ -7,6 +7,8 @@ import {
 } from "react-router-dom";
 import { ConfigProvider } from "antd";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+
+// Lazy load dashboard components for better performance
 import Login from "./pages/Login";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import AdminDashboard from "./pages/AdminDashboard";

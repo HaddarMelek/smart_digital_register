@@ -55,32 +55,24 @@ class MongoDB:
             print(f"⚠️ Warning: Could not create indexes: {e}")
 
     def _migrate_attendance_indexes(self):
-        """Migrate attendance collection indexes to support multiple classes per student per day"""
+        """Create optimized attendance indexes"""
         try:
-            # List current indexes
-            current_indexes = list(self.attendance.list_indexes())
+            # Create compound index for attendance queries
+            self.attendance.create_index(
+                [("student_id", 1), ("date", 1)], 
+                unique=False,
+                name="student_date_idx",
+                background=True
+            )
             
-            # Check if old index exists and drop it
-            for index in current_indexes:
-                if index['name'] == 'student_id_1_date_1':
-                    print("🔄 Dropping old attendance index: student_id_1_date_1")
-                    self.attendance.drop_index('student_id_1_date_1')
-                    break
+            # Create index for class-based queries
+            self.attendance.create_index("class_id", background=True)
             
-            # Create new compound index: student_id + class_id + date
-            try:
-                self.attendance.create_index(
-                    [("student_id", 1), ("class_id", 1), ("date", 1)], 
-                    unique=True,
-                    name="student_class_date_unique"
-                )
-                print("✅ Created new attendance index: student_class_date_unique")
-            except Exception as e:
-                if "already exists" not in str(e):
-                    print(f"⚠️ Could not create attendance index: {e}")
+            print("✅ Attendance indexes created/updated")
             
         except Exception as e:
-            print(f"⚠️ Warning during attendance index migration: {e}")
+            if "already exists" not in str(e):
+                print(f"⚠️ Could not create attendance indexes: {e}")
 
     def check_and_seed_data(self):
         """Check if data exists in database, if not seed it with demo data"""

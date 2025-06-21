@@ -9,19 +9,15 @@ import os
 
 from app.utils.simple_ml import predict_absence_risk, detect_unusual_patterns
 
+# ML libraries - use simple fallback if not available
 try:
     import joblib
     import numpy as np
-    import pandas as pd
     ML_AVAILABLE = True
 except ImportError:
     ML_AVAILABLE = False
-    # Create dummy modules for unavailable packages
-    class DummyModule:
-        pass
-    joblib = DummyModule()
-    np = DummyModule() 
-    pd = DummyModule()
+    joblib = None
+    np = None
     
 from app.utils.simple_ml import SimplePredictor, train_simple_model
 
@@ -707,18 +703,3 @@ def get_class_predictions(class_id):
         print(f"Error in get_class_predictions: {e}")
         return server_error_response("Failed to generate class predictions")
 
-
-def get_recommendation(risk_level, recent_absences):
-    """Get recommendation based on risk level and recent absences"""
-    if risk_level == 'high':
-        return "Immediate intervention recommended - contact parents and consider support plan"
-    elif risk_level == 'medium':
-        if recent_absences >= 2:
-            return "Monitor closely - recent absences indicate potential issues"
-        else:
-            return "Keep monitoring - attendance rate below optimal"
-    else:
-        if recent_absences >= 3:
-            return "Check for recent issues despite overall good attendance"
-        else:
-            return "Good attendance - continue current approach"

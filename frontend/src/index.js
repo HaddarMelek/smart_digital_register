@@ -10,8 +10,3 @@ root.render(
     <App />
   </React.StrictMode>,
 );
-
-// Hot module replacement for development
-if (module.hot) {
-  module.hot.accept();
-}
