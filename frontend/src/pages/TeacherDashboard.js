@@ -130,7 +130,7 @@ const TeacherDashboard = () => {
   };
 
   const fetchAttendance = async () => {
-    if (!selectedClass) return;
+    if (!selectedClass || !attendanceDate) return;
 
     try {
       const dateStr = attendanceDate.format("YYYY-MM-DD");
@@ -430,7 +430,7 @@ const TeacherDashboard = () => {
                 <DatePicker
                   style={{ width: "100%" }}
                   value={attendanceDate}
-                  onChange={setAttendanceDate}
+                  onChange={(date) => setAttendanceDate(date || dayjs())}
                   disabledDate={(date) => date.isAfter(dayjs())}
                 />
               </Space>
@@ -540,7 +540,9 @@ const TeacherDashboard = () => {
               <CalendarOutlined />
               <span>
                 Attendance for {selectedClassName} -{" "}
-                {attendanceDate.format("MMMM D, YYYY")}
+                {attendanceDate
+                  ? attendanceDate.format("MMMM D, YYYY")
+                  : "Select Date"}
               </span>
             </Space>
           }
@@ -579,7 +581,9 @@ const TeacherDashboard = () => {
               style={{ display: "block", marginBottom: "16px" }}
             >
               Mark attendance for {selectedClassName} on{" "}
-              {attendanceDate.format("MMMM D, YYYY")}
+              {attendanceDate
+                ? attendanceDate.format("MMMM D, YYYY")
+                : "Select Date"}
             </Text>
 
             {students.map((student) => (
