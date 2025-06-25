@@ -1,7 +1,8 @@
 {
-  "name": "attendance-frontend",
+  "name": "smart-school-frontend",
   "version": "1.0.0",
-  "description": "React frontend for Intelligent Attendance Register - Alexander Academy",
+  "description": "Smart School Management System - Alexander Academy",
+  "homepage": ".",
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^5.2.0",
@@ -12,7 +13,7 @@
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^6.15.0",
-    "react-scripts": "^0.0.0",
+    "react-scripts": "^5.0.1",
     "recharts": "^2.8.0"
   },
   "devDependencies": {

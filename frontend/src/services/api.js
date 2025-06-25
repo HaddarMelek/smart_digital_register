@@ -1,13 +1,48 @@
 import axios from "axios";
 
+// Get API URL based on environment
+const getApiUrl = () => {
+  // Production API URL from environment
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // Development fallback
+  if (process.env.NODE_ENV === 'development') {
+    return "http://localhost:5000/api";
+  }
+  
+  // Default production API (update this with your actual backend URL)
+  return "https://smart-school-backend.herokuapp.com/api";
+};
+
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000/api",
-  timeout: 10000,
+  baseURL: getApiUrl(),
+  timeout: 15000, // Increased timeout for production
   headers: {
     "Content-Type": "application/json",
   },
 });
+
+// Add request interceptor for debugging
+api.interceptors.request.use((config) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🌐 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+  }
+  return config;
+});
+
+// Add response interceptor for error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('🚨 API Error:', error.response?.data || error.message);
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Helper functions for working with standardized API responses
 export const ApiHelpers = {
