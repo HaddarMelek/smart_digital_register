@@ -1,0 +1,25 @@
+# Fly.io configuration
+app = 'smart-school-backend'
+primary_region = 'cdg'  # Paris region
+
+[build]
+
+[env]
+  PORT = '8080'
+  FLASK_ENV = 'production'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+
+[[http_service.checks]]
+  grace_period = '10s'
+  interval = '30s'
+  method = 'GET'
+  timeout = '5s'
+  path = '/api/health'
+
+[processes]
+  app = 'python app.py'

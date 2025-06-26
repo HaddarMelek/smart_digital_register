@@ -34,8 +34,14 @@ def create_app():
     app.url_map.strict_slashes = False
 
     # Initialize extensions
+    allowed_origins = [
+        'http://localhost:3000', 
+        'http://127.0.0.1:3000',
+        'https://smart-school-managment.vercel.app',
+        'https://*.vercel.app'  # Allow all Vercel preview deployments
+    ]
     CORS(app, 
-         origins=['http://localhost:3000', 'http://127.0.0.1:3000'],
+         origins=allowed_origins,
          methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
          allow_headers=['Content-Type', 'Authorization'],
          supports_credentials=True)
@@ -65,6 +71,14 @@ def create_app():
     
     # Register all route blueprints
     register_routes(app)
+    
+    # Health check route for Fly.io
+    @app.route('/api/health')
+    def health_check():
+        return success_response(
+            data={'status': 'healthy', 'service': 'alexander-academy-api'},
+            message='Service is running'
+        )
     
     # Home route
     @app.route('/')
