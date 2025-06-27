@@ -5,6 +5,9 @@ Flask-JWT-Extended==4.5.3
 
 # Database
 pymongo==4.5.0
+psycopg2-binary==2.9.7
+SQLAlchemy==2.0.21
+Flask-SQLAlchemy==3.0.5
 
 # Security
 bcrypt==4.0.1
@@ -15,6 +18,7 @@ numpy==1.24.3
 
 # Environment and configuration
 python-dotenv==1.0.0
+gunicorn==21.2.0
 
 # Date and time handling
 python-dateutil==2.8.2

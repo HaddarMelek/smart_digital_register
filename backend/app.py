@@ -34,12 +34,18 @@ def create_app():
     app.url_map.strict_slashes = False
 
     # Initialize extensions
+    # CORS Configuration for production and development
     allowed_origins = [
         'http://localhost:3000', 
         'http://127.0.0.1:3000',
         'https://smart-school-managment.vercel.app',
-        'https://*.vercel.app'  # Allow all Vercel preview deployments
+        'https://*.vercel.app'
     ]
+    
+    # Add environment-specific origins
+    if os.getenv('FRONTEND_URL'):
+        allowed_origins.append(os.getenv('FRONTEND_URL'))
+    
     CORS(app, 
          origins=allowed_origins,
          methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -71,14 +77,6 @@ def create_app():
     
     # Register all route blueprints
     register_routes(app)
-    
-    # Health check route for Fly.io
-    @app.route('/api/health')
-    def health_check():
-        return success_response(
-            data={'status': 'healthy', 'service': 'alexander-academy-api'},
-            message='Service is running'
-        )
     
     # Home route
     @app.route('/')
@@ -142,6 +140,12 @@ def create_app():
 
 # Create app instance
 app = create_app()
+
+if __name__ == '__main__':
+    # For development
+    port = int(os.getenv('PORT', 5000))
+    debug = os.getenv('ENVIRONMENT', 'development') == 'development'
+    app.run(host='0.0.0.0', port=port, debug=debug)
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
