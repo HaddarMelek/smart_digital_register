@@ -37,11 +37,21 @@ FRONTEND_URL = https://smart-school-managment.vercel.app
 PORT = 10000
 ```
 
-### 6. Base de Données PostgreSQL (Optionnel)
-Si vous voulez une vraie DB :
-- Créez un **PostgreSQL Database** sur Render
-- Copiez l'**Internal Database URL**
-- Ajoutez : `DATABASE_URL = postgresql://...`
+**Optionnel - Pour MongoDB Atlas :**
+```bash
+MONGO_URI = mongodb+srv://username:password@cluster.mongodb.net/alexander_academy
+```
+*(Sans MongoDB Atlas, l'app utilisera une base temporaire)*
+
+### 6. Base de Données MongoDB Atlas (Recommandé)
+Pour une vraie base de données en production :
+
+1. **Créez un compte MongoDB Atlas** sur [mongodb.com/atlas](https://www.mongodb.com/atlas)
+2. **Créez un cluster gratuit** (M0 Sandbox - 512 MB)
+3. **Créez un utilisateur** avec permissions lecture/écriture
+4. **Autorisez l'accès réseau** : `0.0.0.0/0` (ou spécifique à Render)
+5. **Copiez la connection string** : `mongodb+srv://user:pass@cluster.mongodb.net/alexander_academy`
+6. **Ajoutez dans Render** : `MONGO_URI = mongodb+srv://...`
 
 ### 7. Déployer
 - Cliquez sur **"Create Web Service"**
@@ -64,8 +74,8 @@ REACT_APP_API_URL = https://smart-school-backend.onrender.com/api
 ## 🔧 Fichiers Créés pour Render
 
 1. **`Procfile`** - Command de démarrage
-2. **`requirements.txt`** - Dépendances mises à jour
-3. **`app/database_config.py`** - Support PostgreSQL
+2. **`requirements.txt`** - Dépendances mises à jour (avec gunicorn)
+3. **`app/database_config.py`** - Support MongoDB Atlas
 4. **`.env.example`** - Template variables d'environnement
 5. **CORS mis à jour** - Accepte Vercel
 
