@@ -15,10 +15,16 @@ numpy==1.24.3
 
 # Environment and configuration
 python-dotenv==1.0.0
-gunicorn==21.2.0
 
 # Date and time handling
 python-dateutil==2.8.2
+
+# Build tools (for compatibility)
+setuptools>=65.0.0
+wheel
+
+# Production server
+gunicorn==21.2.0
 
 # Testing (development only)
 pytest==7.4.2
@@ -28,6 +34,3 @@ pytest-mock==3.11.1
 # Development tools
 autopep8==2.0.4
 flake8==6.1.0
-
-# Production server
-gunicorn==21.2.0
