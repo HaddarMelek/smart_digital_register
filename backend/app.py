@@ -138,16 +138,11 @@ def create_app():
     
     return app
 
-# Create app instance
+# Create app instance - This is what Gunicorn looks for
 app = create_app()
 
 if __name__ == '__main__':
-    # For development
-    port = int(os.getenv('PORT', 5000))
-    debug = os.getenv('ENVIRONMENT', 'development') == 'development'
-    app.run(host='0.0.0.0', port=port, debug=debug)
-
-if __name__ == '__main__':
+    # For development only
     port = int(os.getenv('PORT', 5000))
     debug = os.getenv('FLASK_ENV') == 'development'
     
@@ -155,6 +150,5 @@ if __name__ == '__main__':
     print(f"🌐 Backend running on http://localhost:{port}")
     print(f"📚 API Documentation: http://localhost:{port}/api/docs")
     print(f"🌱 Seed endpoint: POST http://localhost:{port}/api/seed")
-
     
-    app.run(host='0.0.0.0', port=port, debug=debug, use_reloader=True, threaded=True)
+    app.run(host='0.0.0.0', port=port, debug=debug)
