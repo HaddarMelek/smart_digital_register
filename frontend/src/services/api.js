@@ -6,12 +6,12 @@ const getApiUrl = () => {
   if (process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
   }
-  
+
   // Development fallback
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     return "http://localhost:5000/api";
   }
-  
+
   // Default production API (update this with your actual backend URL)
   return "https://smart-school-backend.herokuapp.com/api";
 };
@@ -27,8 +27,10 @@ const api = axios.create({
 
 // Add request interceptor for debugging
 api.interceptors.request.use((config) => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`🌐 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      `🌐 API Request: ${config.method?.toUpperCase()} ${config.url}`,
+    );
   }
   return config;
 });
@@ -37,11 +39,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('🚨 API Error:', error.response?.data || error.message);
+    if (process.env.NODE_ENV === "development") {
+      console.error("🚨 API Error:", error.response?.data || error.message);
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 // Helper functions for working with standardized API responses
