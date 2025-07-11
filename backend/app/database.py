@@ -3,6 +3,7 @@ MongoDB Database Configuration (Render + MongoDB Atlas Safe Version)
 """
 import os
 import time
+import ssl
 import certifi
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
@@ -30,24 +31,44 @@ class MongoDB:
         """Attempt to connect with retries and SSL fix"""
         for attempt in range(1, retries + 1):
             try:
-                # Explicit TLS and CA bundle to prevent SSL handshake errors
-                self.client = MongoClient(
-                    self.mongo_url,
-                    tls=True,
-                    tlsCAFile=certifi.where(),
-                    serverSelectionTimeoutMS=20000,
-                )
+                # TLS/SSL diagnostic info
+                try:
+                    openssl = ssl.OPENSSL_VERSION
+                except Exception:
+                    openssl = "<unknown OpenSSL version>"
 
+                print(f"ℹ️ TLS/SSL Diagnostics: OpenSSL={openssl}")
+
+                # Build client kwargs
+                client_kwargs = {
+                    "serverSelectionTimeoutMS": int(os.getenv("MONGO_SERVER_SELECTION_TIMEOUT_MS", 20000)),
+                }
+
+                # Use certifi bundle to avoid system CA issues when connecting to Atlas
+                client_kwargs.update({"tls": True, "tlsCAFile": certifi.where()})
+
+                # Allow developer to bypass certificate verification for local testing only
+                if os.getenv("MONGO_TLS_INSECURE", "false").lower() in ("1", "true", "yes"):
+                    print("⚠️ WARNING: MONGO_TLS_INSECURE enabled - certificate verification will be skipped. Do NOT use in production.")
+                    client_kwargs["tlsAllowInvalidCertificates"] = True
+
+                self.client = MongoClient(self.mongo_url, **client_kwargs)
                 self.db = self.client[self.db_name]
+
                 # Quick ping test
                 self.client.admin.command("ping")
                 print(f"✅ Connected to MongoDB: {self.db_name}")
                 return
 
             except ServerSelectionTimeoutError as e:
+                # Common for Atlas TLS issues
                 print(f"⚠️ MongoDB connection timeout (attempt {attempt}/{retries}): {e}")
+                print("ℹ️ Tip: If this is an SSL/TLS handshake error, try setting MONGO_TLS_INSECURE=true for a temporary non-production workaround or update your Python/OpenSSL installation.")
             except Exception as e:
+                nested = getattr(e, '__cause__', None) or getattr(e, '__context__', None)
                 print(f"❌ Failed to connect to MongoDB (attempt {attempt}/{retries}): {e}")
+                if nested:
+                    print(f"ℹ️ Nested error: {nested}")
 
             time.sleep(delay)
 
