@@ -45,12 +45,23 @@ class MongoDB:
                 }
 
                 # Use certifi bundle to avoid system CA issues when connecting to Atlas
-                client_kwargs.update({"tls": True, "tlsCAFile": certifi.where()})
+                try:
+                    ca_file = certifi.where()
+                    client_kwargs.update({"tls": True, "tlsCAFile": ca_file, "ssl": True})
+                except Exception:
+                    # If certifi is not available for some reason, still attempt connection
+                    client_kwargs.update({"tls": True, "ssl": True})
 
                 # Allow developer to bypass certificate verification for local testing only
                 if os.getenv("MONGO_TLS_INSECURE", "false").lower() in ("1", "true", "yes"):
                     print("⚠️ WARNING: MONGO_TLS_INSECURE enabled - certificate verification will be skipped. Do NOT use in production.")
+                    # pymongo supports both tlsAllowInvalidCertificates (new) and ssl_cert_reqs (older)
                     client_kwargs["tlsAllowInvalidCertificates"] = True
+                    # Backwards compatibility: set ssl_cert_reqs to CERT_NONE
+                    try:
+                        client_kwargs["ssl_cert_reqs"] = ssl.CERT_NONE
+                    except Exception:
+                        pass
 
                 self.client = MongoClient(self.mongo_url, **client_kwargs)
                 self.db = self.client[self.db_name]
