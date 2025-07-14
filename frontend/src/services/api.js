@@ -13,7 +13,11 @@ const getApiUrl = () => {
   }
 
   // Default production API (update this with your actual backend URL)
-  return "https://smart-school-backend.herokuapp.com/api";
+  // If REACT_APP_API_URL is not provided, fall back to current origin + /api
+  console.warn(
+    "REACT_APP_API_URL is not set — falling back to window.location.origin + '/api'. Set REACT_APP_API_URL in your environment for production deployments.",
+  );
+  return `${window.location.origin}/api`;
 };
 
 // Create axios instance with base configuration
