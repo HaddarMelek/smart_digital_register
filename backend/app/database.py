@@ -6,7 +6,9 @@ import time
 import ssl
 import certifi
 from pymongo import MongoClient
-from pymongo.errors import ServerSelectionTimeoutError
+from pymongo.errors import ServerSelectionTimeoutError, ConfigurationError
+import logging
+import traceback
 
 
 class MongoDB:
@@ -44,26 +46,80 @@ class MongoDB:
                     "serverSelectionTimeoutMS": int(os.getenv("MONGO_SERVER_SELECTION_TIMEOUT_MS", 20000)),
                 }
 
-                # Use certifi bundle to avoid system CA issues when connecting to Atlas
+                # Use certifi bundle to create a proper SSLContext to avoid CA/hostname issues
                 try:
                     ca_file = certifi.where()
-                    client_kwargs.update({"tls": True, "tlsCAFile": ca_file, "ssl": True})
-                except Exception:
-                    # If certifi is not available for some reason, still attempt connection
+                    # Build a secure SSLContext
+                    context = ssl.create_default_context(cafile=ca_file)
+                    # Ensure minimum TLS v1.2
+                    try:
+                        context.minimum_version = ssl.TLSVersion.TLSv1_2
+                    except Exception:
+                        # Older Python may not have TLSVersion; ignore
+                        pass
+
+                    # Allow developer to bypass certificate verification for local testing only
+                    if os.getenv("MONGO_TLS_INSECURE", "false").lower() in ("1", "true", "yes"):
+                        print("⚠️ WARNING: MONGO_TLS_INSECURE enabled - certificate verification will be skipped. Do NOT use in production.")
+                        context.check_hostname = False
+                        context.verify_mode = ssl.CERT_NONE
+
+                    # Pass both modern tls flags and the ssl_context for maximum compatibility
+                    client_kwargs.update({
+                        "tls": True,
+                        "tlsCAFile": ca_file,
+                        "ssl": True,
+                        "ssl_context": context,
+                    })
+                except Exception as ex:
+                    # If certifi/ssl context creation fails, fallback to simple tls flags
+                    print(f"⚠️ Could not create SSLContext with certifi: {ex}")
                     client_kwargs.update({"tls": True, "ssl": True})
 
-                # Allow developer to bypass certificate verification for local testing only
+                # If MONGO_TLS_INSECURE set but context creation failed above, set allow invalid certificates
                 if os.getenv("MONGO_TLS_INSECURE", "false").lower() in ("1", "true", "yes"):
-                    print("⚠️ WARNING: MONGO_TLS_INSECURE enabled - certificate verification will be skipped. Do NOT use in production.")
-                    # pymongo supports both tlsAllowInvalidCertificates (new) and ssl_cert_reqs (older)
                     client_kwargs["tlsAllowInvalidCertificates"] = True
-                    # Backwards compatibility: set ssl_cert_reqs to CERT_NONE
                     try:
                         client_kwargs["ssl_cert_reqs"] = ssl.CERT_NONE
                     except Exception:
                         pass
 
-                self.client = MongoClient(self.mongo_url, **client_kwargs)
+                # Enable verbose pymongo logging to help diagnose TLS handshakes in deploy logs
+                try:
+                    logging.getLogger('pymongo').setLevel(logging.DEBUG)
+                    logging.getLogger('pymongo').addHandler(logging.StreamHandler())
+                except Exception:
+                    pass
+
+                # Print safe diagnostic (don't print the full URI which may contain credentials)
+                safe_host = self.mongo_url.split('@')[-1] if '@' in self.mongo_url else self.mongo_url
+                print(f"ℹ️ Attempting MongoClient connection to: {safe_host}")
+
+                # Try creating MongoClient; if the installed pymongo doesn't accept ssl_context
+                # fallback by removing it and retrying once.
+                try:
+                    self.client = MongoClient(self.mongo_url, **client_kwargs)
+                except ConfigurationError as ce:
+                    msg = str(ce)
+                    print(f"⚠️ ConfigurationError when creating MongoClient: {msg}")
+                    # If ssl_context was the problem, remove it and retry
+                    if 'ssl_context' in client_kwargs:
+                        print("ℹ️ Retrying MongoClient without 'ssl_context' for compatibility with this pymongo version")
+                        client_kwargs.pop('ssl_context', None)
+                        try:
+                            self.client = MongoClient(self.mongo_url, **client_kwargs)
+                        except Exception:
+                            print("❌ Retry without ssl_context failed:")
+                            traceback.print_exc()
+                            raise
+                    else:
+                        # Not caused by ssl_context — re-raise for outer handler
+                        raise
+                except Exception as ce:
+                    # Print traceback to logs for better debugging of TLS errors
+                    print("❌ Exception creating MongoClient:")
+                    traceback.print_exc()
+                    raise
                 self.db = self.client[self.db_name]
 
                 # Quick ping test
