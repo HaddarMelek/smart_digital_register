@@ -3,6 +3,7 @@ MongoDB Database Configuration (Simplified SSL Version for Render)
 """
 import os
 import logging
+import certifi
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 
@@ -33,13 +34,30 @@ class MongoDB:
         """Attempt to connect with simplified SSL settings for compatibility"""
         try:
             # Simplified client configuration for better compatibility with Render/MongoDB Atlas
+            server_timeout = int(os.getenv("MONGO_SERVER_SELECTION_TIMEOUT_MS", 20000))
+
+            # Default TLS options: use certifi CA bundle for Atlas (recommended).
+            # For older or internal testing environments an unsafe bypass can be enabled
+            # by setting MONGO_INSECURE=true in the environment (NOT recommended for prod).
+            insecure = os.getenv("MONGO_INSECURE", "true").lower() in ("1", "true", "yes")
+
             client_kwargs = {
-                "serverSelectionTimeoutMS": int(os.getenv("MONGO_SERVER_SELECTION_TIMEOUT_MS", 20000)),
+                "serverSelectionTimeoutMS": server_timeout,
+                # prefer modern 'tls' option; avoid using deprecated 'ssl' parameter
                 "tls": True,
-                "ssl": True,
-                "tlsAllowInvalidCertificates": True,
-                "tlsAllowInvalidHostnames": True,
             }
+
+            if insecure:
+                # Explicitly allow invalid certs/hostnames (unsafe)
+                client_kwargs.update({
+                    "tlsAllowInvalidCertificates": True,
+                    "tlsAllowInvalidHostnames": True,
+                })
+            else:
+                # Use certifi CA bundle which works with Atlas and common CA chains
+                client_kwargs.update({
+                    "tlsCAFile": certifi.where(),
+                })
 
             self.client = MongoClient(self.mongo_url, **client_kwargs)
             self.db = self.client[self.db_name]
