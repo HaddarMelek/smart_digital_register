@@ -31,39 +31,34 @@ class MongoDB:
     # ---------------------------------------------------------------------
 
     def _connect_with_retry(self):
-        """Attempt to connect with simplified SSL settings for compatibility"""
+        """Attempt to connect with or without TLS depending on environment"""
         try:
-            # Simplified client configuration for better compatibility with Render/MongoDB Atlas
             server_timeout = int(os.getenv("MONGO_SERVER_SELECTION_TIMEOUT_MS", 20000))
-
-            # Default TLS options: use certifi CA bundle for Atlas (recommended).
-            # For older or internal testing environments an unsafe bypass can be enabled
-            # by setting MONGO_INSECURE=true in the environment (NOT recommended for prod).
             insecure = os.getenv("MONGO_INSECURE", "true").lower() in ("1", "true", "yes")
+
+            # Determine whether TLS should be used
+            use_tls = self.mongo_url.startswith("mongodb+srv://") or os.getenv("MONGO_TLS", "false").lower() in ("1", "true", "yes")
 
             client_kwargs = {
                 "serverSelectionTimeoutMS": server_timeout,
-                # prefer modern 'tls' option; avoid using deprecated 'ssl' parameter
-                "tls": True,
+                "tls": use_tls,
             }
 
-            if insecure:
-                # Explicitly allow invalid certs/hostnames (unsafe)
-                client_kwargs.update({
-                    "tlsAllowInvalidCertificates": True,
-                    "tlsAllowInvalidHostnames": True,
-                })
-            else:
-                # Use certifi CA bundle which works with Atlas and common CA chains
-                client_kwargs.update({
-                    "tlsCAFile": certifi.where(),
-                })
+            if use_tls:
+                if insecure:
+                    client_kwargs.update({
+                        "tlsAllowInvalidCertificates": True,
+                        "tlsAllowInvalidHostnames": True,
+                    })
+                else:
+                    client_kwargs.update({
+                        "tlsCAFile": certifi.where(),
+                    })
 
             self.client = MongoClient(self.mongo_url, **client_kwargs)
             self.db = self.client[self.db_name]
-
-            # Quick ping test
             self.client.admin.command("ping")
+            print("✅ Connected to MongoDB!")
             return
 
         except ServerSelectionTimeoutError as e:
